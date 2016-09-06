@@ -1,10 +1,10 @@
+import click
 import datetime
+import jinja2
+import mistune
 import pytoml
 import os
 import os.path
-import click
-
-TerminalRed = "\033[1;31m",
 
 
 @click.group()
@@ -22,6 +22,7 @@ def init(name):
     try:
         os.mkdir(name, mode=0o755)
         os.mkdir("%s/article" % name, mode=0o755)
+        os.mkdir("%s/site" % name, mode=0o755)
     except FileExistsError:
         print("Error: Directory %s is existed, continue" % name)
         return
@@ -34,9 +35,9 @@ def new(title):
         "title": title,
         "create_time": datetime.datetime.now().isoformat("T")
     }
-    article_default_text = "%s+++++++\n" % pytoml.dumps(article_info)
+    article_default_text = "%s+++++++\n\n##1" % pytoml.dumps(article_info)
 
-    if not os.path.isfile("article/%s.md"):
+    if os.path.isfile("article/%s.md" % title):
         print("Error: Article '%s' is existed." % title)
         return
 
@@ -45,7 +46,35 @@ def new(title):
     file.close()
 
 
+@click.command(help="Create blog website")
+def build():
+    j_env = jinja2.Environment(loader=jinja2.PackageLoader("main", "template"))
+    j_template = j_env.get_template("article.html")
+
+    file_names = os.listdir("article")
+    for file_name in file_names:
+        file = open("article/%s" % file_name, "rt")
+        article_head_text, article_content_markdown = file.read().split("+++++++")
+        file.close()
+
+        article_head = pytoml.loads(article_head_text)
+        article_title = article_head["title"]
+        article_create_time = datetime.datetime.strptime(article_head["create_time"], '%Y-%m-%dT%H:%M:%S.%f')
+
+        article_content_html = mistune.markdown(article_content_markdown)
+
+        article_html = j_template.render(
+            title   = article_title,
+            time    = article_create_time.strftime("%Y-%m-%d %H:%M"),
+            content = article_content_html
+        )
+        file = open("site/%s.%s.html" % (article_create_time.isoformat("T"), article_title), "wt")
+        file.write(article_html)
+        file.close()
+
+
 if __name__ == "__main__":
     main.add_command(init)
     main.add_command(new)
+    main.add_command(build)
     main()

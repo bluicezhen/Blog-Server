@@ -93,4 +93,4 @@ ENV/
 .idea/
 .venv/
 test_blog/
-
+tmp.py
