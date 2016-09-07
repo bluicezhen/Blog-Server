@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>甄三十七的博客</title>
+</head>
+<body>
+    <h1>甄三十七的博客</h1>
+    <br>
+    {% for article in articles %}
+        <a href="{{ article.file_name }}"><h2>{{ article.title }}</h2></a>
+        <p>发表于: {{ article.create_time | format_time }}</p>
+        <hr>
+    {% endfor %}
+</body>
+</html>

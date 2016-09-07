@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ title }}</title>
+    <title>{{ title }} - 甄三十七的博客</title>
 </head>
 <body>
     <h1>{{ title }}</h1>
-    <p>{{ time }}</p>
+    <p>发表于: {{ create_time | format_time }}</p>
     <hr>
     <div>
         {{ content }}

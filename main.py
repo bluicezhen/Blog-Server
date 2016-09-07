@@ -7,6 +7,10 @@ import os
 import os.path
 
 
+def jinja2_format_datetime(t: datetime.datetime):
+    return t.strftime("%Y-%m-%d %H:%M")
+
+
 @click.group()
 def main():
     pass
@@ -49,7 +53,10 @@ def new(title):
 @click.command(help="Create blog website")
 def build():
     j_env = jinja2.Environment(loader=jinja2.PackageLoader("main", "template"))
+    j_env.filters["format_time"] = jinja2_format_datetime
     j_template = j_env.get_template("article.html")
+
+    articles = []
 
     file_names = os.listdir("article")
     for file_name in file_names:
@@ -64,13 +71,24 @@ def build():
         article_content_html = mistune.markdown(article_content_markdown)
 
         article_html = j_template.render(
-            title   = article_title,
-            time    = article_create_time.strftime("%Y-%m-%d %H:%M"),
-            content = article_content_html
+            title       = article_title,
+            create_time = article_create_time,
+            content     = article_content_html
         )
-        file = open("site/%s.%s.html" % (article_create_time.isoformat("T"), article_title), "wt")
+        html_file_name = "%s.%s.html" % (article_create_time.isoformat("T"), article_title)
+        file = open("site/%s" % html_file_name, "wt")
         file.write(article_html)
         file.close()
+
+        articles.append({"title": article_title, "file_name": html_file_name, "create_time": article_create_time})
+
+    articles = sorted(articles, key=lambda item: item["create_time"], reverse=True)
+    j_template = j_env.get_template("index.html")
+    index_html = j_template.render(articles=articles)
+
+    file = open("site/index.html", "wt")
+    file.write(index_html)
+    file.close()
 
 
 if __name__ == "__main__":
