@@ -75,7 +75,7 @@ def build():
             create_time = article_create_time,
             content     = article_content_html
         )
-        html_file_name = "%s.%s.html" % (article_create_time.isoformat("T"), article_title)
+        html_file_name = "%s-%s.html" % (article_create_time.isoformat("T").split(".")[0], article_title)
         file = open("site/%s" % html_file_name, "wt")
         file.write(article_html)
         file.close()
